@@ -6,7 +6,7 @@
 -- Author      : Jamil Khatib  (khatib@ieee.org)
 -- Organization: OpenIPCore Project
 -- Created     : 2000/12/30
--- Last update: 2001/01/12
+-- Last update: 2001/01/26
 -- Platform    : 
 -- Simulators  : Modelsim 5.3XE/Windows98
 -- Synthesizers: 
@@ -41,10 +41,74 @@
 -- Desccription    :   RxEnable bug fixed
 --
 -------------------------------------------------------------------------------
+-- Revisions  :
+-- Revision Number :   3
+-- Version         :   0.3
+-- Date            :   16 Jan 2001
+-- Modifier        :   Jamil Khatib (khatib@ieee.org)
+-- Desccription    :   TX componentes added
+--
+-------------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 
 package hdlc_components_pkg is
+
+  component TxChannel_ent
+    port (
+      TxClk        : in  std_logic;
+      rst_n        : in  std_logic;
+      TXEN         : in  std_logic;
+      Tx           : out std_logic;
+      ValidFrame   : in  std_logic;
+      AbortFrame   : in  std_logic;
+      AbortedTrans : out std_logic;
+      WriteByte    : in  std_logic;
+      rdy          : out std_logic;
+      TxData       : in  std_logic_vector(7 downto 0));
+  end component;
+
+  component TxCont_ent
+    port (
+      TXclk         : in  std_logic;
+      rst_n         : in  std_logic;
+      TXEN          : in  std_logic;
+      enable        : out std_logic;
+      BackendEnable : out std_logic;
+      abortedTrans  : in  std_logic;
+      inProgress    : in  std_logic;
+      ValidFrame    : in  std_logic;
+      Frame         : out std_logic;
+      AbortFrame    : in  std_logic;
+      AbortTrans    : out std_logic);
+  end component;
+
+  component flag_ins_ent
+    port (
+      TXclk      : in  std_logic;
+      rst_n      : in  std_logic;
+      TX         : out std_logic;
+      TXEN       : in  std_logic;
+      TXD        : in  std_logic;
+      AbortFrame : in  std_logic;
+      Frame      : in  std_logic);
+  end component;
+
+  component ZeroIns_ent
+    port (
+      TxClk         : in  std_logic;
+      rst_n         : in  std_logic;
+      enable        : in  std_logic;
+      BackendEnable : in  std_logic;
+      abortedTrans  : out std_logic;
+      inProgress    : out std_logic;
+      ValidFrame    : in  std_logic;
+      Writebyte     : in  std_logic;
+      rdy           : out std_logic;
+      TXD           : out std_logic;
+      Data          : in  std_logic_vector(7 downto 0));
+  end component;
 
   component rxcont_ent
     port (
