@@ -32,6 +32,14 @@
 -- Desccription    :   Created
 --
 -------------------------------------------------------------------------------
+-- Revisions  :
+-- Revision Number :   2
+-- Version         :   0.2
+-- Date            :   10 Jan 2001
+-- Modifier        :   Jamil Khatib (khatib@ieee.org)
+-- Desccription    :   Code clean
+--
+-------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -49,8 +57,6 @@ entity FlagDetect_ent is
 end FlagDetect_ent;
 
 architecture FlagDetect_beh of FlagDetect_ent is
-  type states_typ is (IDLE, ZERO, ONE1, ONE2, ONE3, ONE4, ONE5, ONE6);
-                                        -- State machine states
 
   signal ShiftReg : std_logic_vector(7 downto 0);  -- Shift Register
 
@@ -61,7 +67,7 @@ begin  -- FlagDetect_beh
   -- inputs : RXclk, rst
   -- outputs: 
   bitstreem_proc     : process (RXclk, rst)
-    variable state   : states_typ;      -- System State
+
     variable FlagVar : std_logic;       -- Flag detected variable
   begin  -- process bitstreem_proc
     if rst = '0' then                   -- asynchronous reset (active low)
@@ -88,100 +94,6 @@ begin  -- FlagDetect_beh
       ShiftReg(7 downto 0) <= RX & ShiftReg(7 downto 1);
       RXD                  <= ShiftReg(0);
 
---      case state is
-
---        when IDLE =>
---          if RX = '0' then
---            state := ZERO;
---          else
---            state := IDLE;
---          end if;
-
---          FlagDetect <= '0';
---          Abort      <= '0';
----------------------------------------------------------------------------------
-
---        when ZERO =>
---          if RX = '0' then
---            state := ZERO;
---          else
---            state := ONE1;
---          end if;
-
---          FlagDetect <= '0';
---          Abort      <= '0';
----------------------------------------------------------------------------------
-
---        when ONE1 =>
---          if RX = '0' then
---            state := ZERO;
---          else
---            state := ONE2;
---          end if;
-
---          FlagDetect <= '0';
---          Abort      <= '0';
----------------------------------------------------------------------------------
---        when ONE2 =>
---          if RX = '0' then
---            state    := ZERO;
---          else
---            state    := ONE3;
---          end if;
-
---          FlagDetect <= '0';
---          Abort      <= '0';
----------------------------------------------------------------------------------
---        when ONE3 =>
---          if RX = '0' then
---            state    := ZERO;
---          else
---            state    := ONE4;
---          end if;
-
---          FlagDetect <= '0';
---          Abort      <= '0';
----------------------------------------------------------------------------------
---        when ONE4 =>
---          if RX = '0' then
---            state    := ZERO;
---          else
---            state    := ONE5;
---          end if;
-
---          FlagDetect <= '0';
---          Abort      <= '0';
----------------------------------------------------------------------------------
---        when ONE5 =>
---          if RX = '0' then
---            state    := ZERO;
---          else
---            state    := ONE6;
---          end if;
-
---          FlagDetect   <= '0';
---          Abort        <= '0';
----------------------------------------------------------------------------------
---        when ONE6 =>
---          if RX = '0' then
---            FlagDetect <= '1';
---            Abort      <= '0';
---          else
-
---            FlagDetect <= '0';
---            Abort      <= '1';
---          end if;
---          state        := ZERO;
-
----------------------------------------------------------------------------------
---          when others =>
---            state    := IDLE;
---          FlagDetect <= '0';
---          Abort      <= '0';
-
---      end case;
-
---      RXD <= RX;
 
     end if;
   end process bitstreem_proc;

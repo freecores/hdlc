@@ -6,7 +6,7 @@
 -- Author      : Jamil Khatib  (khatib@ieee.org)
 -- Organization: OpenIPCore Project
 -- Created     : 2000/12/30
--- Last update: 2001/01/05
+-- Last update: 2001/01/10
 -- Platform    : 
 -- Simulators  : Modelsim 5.3XE/Windows98
 -- Synthesizers: 
@@ -82,6 +82,8 @@ begin  -- rxcont_beh
       FlagInit       := '0';
       initzero       <= '0';
       FrameStatusReg := (others => '0');
+      FrameError     <= '0';
+      FlagCounter    := 0;
 
     elsif Rxclk'event and Rxclk = '1' then  -- rising clock edge
 -------------------------------------------------------------------------------
