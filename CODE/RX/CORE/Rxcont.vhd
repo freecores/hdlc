@@ -82,8 +82,8 @@ begin  -- rxcont_beh
       FlagInit       := '0';
       initzero       <= '0';
       FrameStatusReg := (others => '0');
-      FrameError     <= '0';
-      FlagCounter    := 0;
+		FrameError <= '0';
+	  FlagCounter := 0;
 
     elsif Rxclk'event and Rxclk = '1' then  -- rising clock edge
 -------------------------------------------------------------------------------
@@ -139,7 +139,7 @@ begin  -- rxcont_beh
             if counter = 5 then
 
               enable <= '0';
-
+counter := 0;
               FrameError <= '1';
 
             else

@@ -6,7 +6,7 @@
 -- Author      : Jamil Khatib  (khatib@ieee.org)
 -- Organization: OpenIPCore Project
 -- Created     : 2000/12/30
--- Last update : 2000/12/30
+-- Last update: 2001/01/12
 -- Platform    : 
 -- Simulators  : Modelsim 5.3XE/Windows98
 -- Synthesizers: 
@@ -30,6 +30,15 @@
 -- Date            :   30 Dec 2000
 -- Modifier        :   Jamil Khatib (khatib@ieee.org)
 -- Desccription    :   Created
+-- ToOptimize      :   Add an input procedure to insert data pattern
+-- Bugs            :  
+-------------------------------------------------------------------------------
+-- Revisions  :
+-- Revision Number :   2
+-- Version         :   0.2
+-- Date            :   12 Jan 2001
+-- Modifier        :   Jamil Khatib (khatib@ieee.org)
+-- Desccription    :   Rx Enable and delayed Read tests are added
 -- ToOptimize      :   Add an input procedure to insert data pattern
 -- Bugs            :  
 -------------------------------------------------------------------------------
@@ -68,26 +77,10 @@ begin  -- rx_tb_beh
   rst_i <= '0',
            '1' after 30 ns;
 
-  RxEn_i <= '1';
+  RxEn_i <= '1',
+            '0' after 960 ns,
+            '1' after 1280 ns;
 -------------------------------------------------------------------------------
--- purpose: Generate data
--- type   : sequential
--- inputs : 
--- outputs: 
---  send_data_proc : process
---  begin                               -- process send_data_proc
---RxEn_i <= '1';
---    Rx_i <= '0';
---    wait until rst_i = '1';
-
-
---    for i in 0 to DataStreem'length -1 loop
---      wait until Rxclk_i = '0';
---      Rx_i <= DataStreem(i);
-
-
---    end loop;                         -- i
---  end process send_data_proc;
 
   -- purpose: Serial interface stimulus
   -- type   : sequential
@@ -118,10 +111,14 @@ begin  -- rx_tb_beh
     variable counter : integer := 0;    -- Counter
   begin  -- process backend_proc
     if rdy_i = '1' then
-      if counter mod 2 = 0 then
+      -- Counter is used to generate Readbyte signal at different delays
+      if not((counter > 20) and (counter < 40)) then
         Readbyte_i             <= '1' after 60 ns;
-      else
+      elsif(counter mod 2 = 0) then
+        -- data bits will be lost in this case
         Readbyte_i             <= '1' after 350 ns;
+      else
+        Readbyte_i             <= '1' after 60 ns;
       end if;
       counter                  := counter+1;
     else

@@ -6,7 +6,7 @@
 -- Author      : Jamil Khatib  (khatib@ieee.org)
 -- Organization: OpenIPCore Project
 -- Created     : 2000/12/30
--- Last update : 2000/12/30
+-- Last update: 2001/01/12
 -- Platform    : 
 -- Simulators  : Modelsim 5.3XE/Windows98
 -- Synthesizers: 
@@ -33,10 +33,19 @@
 -- ToOptimize      :
 -- Bugs            :  
 -------------------------------------------------------------------------------
+-- Revisions  :
+-- Revision Number :   2
+-- Version         :   0.2
+-- Date            :   12 Jan 2001
+-- Modifier        :   Jamil Khatib (khatib@ieee.org)
+-- Desccription    :   RXEN bug fixed
+--
+-------------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 
-use work.hdlc_components_pkg.all; 
+use work.hdlc_components_pkg.all;
 
 entity RxChannel_ent is
 
@@ -63,6 +72,8 @@ architecture RxChannel_beh of RxChannel_ent is
   signal FlagDetect_i : std_logic;      -- flag Detect internal
   signal Abort_i      : std_logic;      -- Internal Abort signal
   signal initzero_i   : std_logic;      -- Init Zero detect block
+  signal rxen_i       : std_logic;      -- RXenable internal
+
 begin  -- RxChannel_beh
 
 -------------------------------------------------------------------------------
@@ -71,7 +82,7 @@ begin  -- RxChannel_beh
     port map (
       RxClk        => RxClk,
       rst          => rst,
-      RxEn         => RxEn,
+      RxEn         => RxEn_i,
       AbortedFrame => AbortSignal,
       Abort        => Abort_i,
       FlagDetect   => FlagDetect_i,
@@ -99,6 +110,8 @@ begin  -- RxChannel_beh
       rst          => rst,
       FlagDetect   => FlagDetect_i,
       Abort        => Abort_i,
+      RXEN         => RXEN,
+      RxEN_o       => RXEN_i,
       RXD          => RXD_i,
       RX           => RX);
 -------------------------------------------------------------------------------

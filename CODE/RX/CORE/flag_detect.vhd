@@ -6,7 +6,7 @@
 -- Author      : Jamil Khatib  (khatib@ieee.org)
 -- Organization: OpenIPCore Project
 -- Created     : 2000/12/28
--- Last update: 2001/01/05
+-- Last update: 2001/01/12
 -- Platform    : 
 -- Simulators  : Modelsim 5.3XE/Windows98
 -- Synthesizers: 
@@ -40,7 +40,14 @@
 -- Desccription    :   Code clean
 --
 -------------------------------------------------------------------------------
-
+-- Revisions  :
+-- Revision Number :   3
+-- Version         :   0.3
+-- Date            :   12 Jan 2001
+-- Modifier        :   Jamil Khatib (khatib@ieee.org)
+-- Desccription    :   RXEN bug fixed
+--
+-------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -51,6 +58,8 @@ entity FlagDetect_ent is
     rst        : in  std_logic;         -- system reset
     FlagDetect : out std_logic;         -- Flag detected
     Abort      : out std_logic;         -- Abort signal detected
+    RxEn       : in  std_logic;         -- RX enable
+    RXEn_O     : out std_logic;         -- RXEN output signal
     RXD        : out std_logic;         -- RXD output
     RX         : in  std_logic);        -- RX signal
 
@@ -66,13 +75,14 @@ begin  -- FlagDetect_beh
   -- type   : sequential
   -- inputs : RXclk, rst
   -- outputs: 
-  bitstreem_proc     : process (RXclk, rst)
+  bitstreem_proc : process (RXclk, rst)
 
-    variable FlagVar : std_logic;       -- Flag detected variable
+    variable FlagVar    : std_logic;    -- Flag detected variable
+    variable Enable_Reg : std_logic_vector(7 downto 0);  -- Enable Register
+
   begin  -- process bitstreem_proc
     if rst = '0' then                   -- asynchronous reset (active low)
 
---      state      := IDLE;
       FlagDetect <= '0';
       Abort      <= '0';
 
@@ -81,6 +91,9 @@ begin  -- FlagDetect_beh
       FlagVar := '0';
 
       ShiftReg <= (others => '0');
+
+      RXEN_O     <= '1';
+      Enable_Reg := (others => '1');
 
     elsif RXclk'event and RXclk = '1' then  -- rising clock edge
 
@@ -94,6 +107,9 @@ begin  -- FlagDetect_beh
       ShiftReg(7 downto 0) <= RX & ShiftReg(7 downto 1);
       RXD                  <= ShiftReg(0);
 
+      RXEN_O <= Enable_Reg(0);
+
+      Enable_Reg(7 downto 0) := RXEN & Enable_Reg(7 downto 1);
 
     end if;
   end process bitstreem_proc;

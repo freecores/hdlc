@@ -6,7 +6,7 @@
 -- Author      : Jamil Khatib  (khatib@ieee.org)
 -- Organization: OpenIPCore Project
 -- Created     : 2000/12/28
--- Last update : 2000/1/1
+-- Last update: 2001/01/12
 -- Platform    : 
 -- Simulators  : Modelsim 5.3XE/Windows98
 -- Synthesizers: FPGA express 3
@@ -30,6 +30,16 @@
 -- Date            :   28 Dec 2000
 -- Modifier        :   Jamil Khatib (khatib@ieee.org)
 -- Desccription    :   Created
+-- ToOptimize      :   Needs large external buffer (1 byte internal buffer)
+--                     for low speed backend interface 
+--                     (flow control is used to manage this problem)
+-------------------------------------------------------------------------------
+-- Revisions  :
+-- Revision Number :   2
+-- Version         :   0.2
+-- Date            :   12 Jan 2001
+-- Modifier        :   Jamil Khatib (khatib@ieee.org)
+-- Desccription    :   Enable bug fixed
 -- ToOptimize      :   Needs large external buffer (1 byte internal buffer)
 --                     for low speed backend interface 
 --                     (flow control is used to manage this problem)
@@ -96,12 +106,12 @@ begin  -- ZeroDetect_beh
         if StartofFrame = '0' then
 
           -- add new bit to the check register
-          checkreg := RxD & checkreg(5 downto 1);
-           tempRegister(counter) := RxD;
+          checkreg              := RxD & checkreg(5 downto 1);
+          tempRegister(counter) := RxD;
         else
           -- reset the check register
-          checkreg := (RxD , others => '0');
-          counter := 0;
+          checkreg              := (RxD, others => '0');
+          counter               := 0;
           tempRegister(counter) := RxD;
         end if;
 
@@ -162,85 +172,33 @@ begin  -- ZeroDetect_beh
       rdy <= '0';
 
     elsif Rxclk'event and Rxclk = '1' then  -- rising clock edge
+      if enable = '1' then
 
+        if flag = '1' then
 
-      if flag = '1' then
+          status := '1';                -- Can not take more
 
-        status := '1';                  -- Can not take more
+          RxData  <= DataRegister;
+          rdy_var := '1';
 
-        RxData  <= DataRegister;
-        rdy_var := '1';
+        end if;  -- flag
 
-      end if;
-
+      end if;  -- enable
       if readbyte = '1' then
 
         status := '0';                  -- can take more data
 
         rdy_var := '0';
 
-      end if;
+      end if;  -- readbyte
 
       rdy  <= rdy_var;
       aval <= not status;
-
-    end if;
-
+    end if;  -- clk
 
 
   end process backend_proc;
 
 -------------------------------------------------------------------------------
-
-  -- purpose: serial to Parallel conversion and inserted Zero detection
-  -- type   : sequential
-  -- inputs : Rxclk, rst
-  -- outputs: 
---  S2P_proc : process (Rxclk, rst)
-
-
---    variable tmpdatareg : std_logic_vector(MAX_REG_SIZE-1 downto 0);
---                                        -- Temporary variable for storing data
-
---  begin                               -- process P2S_proc
---    if rst = '0' then                 -- asynchronous reset (active low)
---      counter      := 0;
---      DataRegister <= (others => '0');
-
-
---    elsif Rxclk'event and Rxclk = '1' then  -- rising clock edge
-
---      -- 01111101 must be set back to 0111111 
---      ZeroDetected := DataRegister(0) and not DataRegister(1) and DataRegister(2) and DataRegister(3) and DataRegister(4) and DataRegister(5) and DataRegister(6);
-
-
---      tmpdatareg(MAX_REG_SIZE-1) := RxD;  -- new data
-
---      if ZeroDetected = '1' then      -- check old data if it contains inserted zero
-
---        tmpdatareg(MAX_REG_SIZE-2 downto 0) := tmpdatareg(MAX_REG_SIZE-1 downto 2) tmpdatareg(0);
-
---      else
-
---        tmpdatareg(MAX_REG_SIZE-2 downto 0) := tmpdatareg(MAX_REG_SIZE-1 downto1);
-
-
---      end if;
-
-
-----      tmpdatareg(counter) <= RxD;   -- generates a large Mux 
-
-----      if counter = MAX_REG_SIZE-1 then
-----        counter <= 0;
-----      else
-----        counter <= counter +1;
-----      end if;
-
-
---      DataRegister <= tmpdatareg;
-
-
---    end if;
---  end process S2P_proc;
 
 end ZeroDetect_beh;
