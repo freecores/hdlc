@@ -6,7 +6,7 @@
 -- Author      : Jamil Khatib  (khatib@ieee.org)
 -- Organization: OpenIPCore Project
 -- Created     : 2000/12/28
--- Last update: 2001/01/12
+-- Last update: 2001/04/27
 -- Platform    : 
 -- Simulators  : Modelsim 5.3XE/Windows98
 -- Synthesizers: FPGA express 3
@@ -44,17 +44,25 @@
 --                     for low speed backend interface 
 --                     (flow control is used to manage this problem)
 -------------------------------------------------------------------------------
-
+-- Revisions  :
+-- Revision Number :   3
+-- Version         :   0.3
+-- Date            :   27 April 2001
+-- Modifier        :   Jamil Khatib (khatib@ieee.org)
+-- Desccription    :   Available and enable bugs fixed
+-- ToOptimize      :  
+-------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 
 entity ZeroDetect_ent is
 
   port (
-    Readbyte : in  std_logic;           -- Back end read byte
-    aval     : out std_logic;           -- can get more data (connected to flow
+    ValidFrame : in  std_logic;         -- Valid Frame strobe
+    Readbyte   : in  std_logic;         -- Back end read byte
+    aval       : out std_logic;         -- can get more data (connected to flow
                                         -- controller
-    enable   : in  std_logic;           -- enable (Driven by flow controller)
+    enable     : in  std_logic;         -- enable (Driven by flow controller)
 
     rdy          : out std_logic;                      -- data ready
     rst          : in  std_logic;                      -- system reset
@@ -192,8 +200,16 @@ begin  -- ZeroDetect_beh
 
       end if;  -- readbyte
 
-      rdy  <= rdy_var;
-      aval <= not status;
+      rdy <= rdy_var;
+
+      if ValidFrame = '0' then
+        aval <= '1';
+      else
+
+        aval <= not status;
+      end if;
+
+
     end if;  -- clk
 
 

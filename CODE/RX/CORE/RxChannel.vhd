@@ -6,7 +6,7 @@
 -- Author      : Jamil Khatib  (khatib@ieee.org)
 -- Organization: OpenIPCore Project
 -- Created     : 2000/12/30
--- Last update: 2001/01/12
+-- Last update: 2001/04/27
 -- Platform    : 
 -- Simulators  : Modelsim 5.3XE/Windows98
 -- Synthesizers: 
@@ -41,11 +41,18 @@
 -- Desccription    :   RXEN bug fixed
 --
 -------------------------------------------------------------------------------
-
+-- Revisions  :
+-- Revision Number :   3
+-- Version         :   0.3
+-- Date            :   27 April 2001
+-- Modifier        :   Jamil Khatib (khatib@ieee.org)
+-- Desccription    :   FrameAvailable port added to Zero_detect 
+--
+-------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
-
-use work.hdlc_components_pkg.all;
+LIBRARY hdlc;
+use hdlc.hdlc_components_pkg.all;
 
 entity RxChannel_ent is
 
@@ -74,9 +81,13 @@ architecture RxChannel_beh of RxChannel_ent is
   signal initzero_i   : std_logic;      -- Init Zero detect block
   signal rxen_i       : std_logic;      -- RXenable internal
 
+  -- New
+  signal ValidFrame_i : std_logic;        -- Internal Valid Frame
+  
 begin  -- RxChannel_beh
 
 -------------------------------------------------------------------------------
+ValidFrame <= ValidFrame_i;
 
   Controller   : rxcont_ent
     port map (
@@ -86,7 +97,7 @@ begin  -- RxChannel_beh
       AbortedFrame => AbortSignal,
       Abort        => Abort_i,
       FlagDetect   => FlagDetect_i,
-      ValidFrame   => ValidFrame,
+      ValidFrame   => ValidFrame_i,     --New
       FrameError   => FrameError,
       aval         => aval_i,
       initzero     => initzero_i,
@@ -94,6 +105,7 @@ begin  -- RxChannel_beh
 -------------------------------------------------------------------------------
   zero_backend : ZeroDetect_ent
     port map (
+      ValidFrame => ValidFrame_i,       --New
       Readbyte     => Readbyte,
       aval         => aval_i,
       enable       => enable_i,

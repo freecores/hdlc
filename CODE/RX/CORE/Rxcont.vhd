@@ -6,7 +6,7 @@
 -- Author      : Jamil Khatib  (khatib@ieee.org)
 -- Organization: OpenIPCore Project
 -- Created     : 2000/12/30
--- Last update: 2001/01/10
+-- Last update: 2001/04/27
 -- Platform    : 
 -- Simulators  : Modelsim 5.3XE/Windows98
 -- Synthesizers: 
@@ -33,7 +33,15 @@
 -- ToOptimize      :
 -- Bugs            :   
 -------------------------------------------------------------------------------
-
+-- Revisions  :
+-- Revision Number :   2
+-- Version         :   0.2
+-- Date            :   27 April 2001
+-- Modifier        :   Jamil Khatib (khatib@ieee.org)
+-- Desccription    :   Enable and Available Bugs fixed
+-- ToOptimize      :
+-- Bugs            :   
+-------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -139,7 +147,7 @@ begin  -- rxcont_beh
             if counter = 5 then
 
               enable <= '0';
-counter := 0;
+              counter := 0;
               FrameError <= '1';
 
             else
