@@ -6,7 +6,7 @@
 -- Author      : Jamil Khatib  (khatib@ieee.org)
 -- Organization: OpenIPCore Project
 -- Created     :2001/01/15
--- Last update: 2001/10/20
+-- Last update:2001/10/26
 -- Platform    : 
 -- Simulators  : Modelsim 5.3XE/Windows98
 -- Synthesizers: 
@@ -169,14 +169,25 @@ BEGIN  -- TxCont_beh
 
           WHEN "011" =>
             IF counter > 2 AND inProgress = '0' THEN
-              state := "000";
-              Frame <= '0';
-            ELSE
-              Frame <= '1';
+              state := "100";
             END IF;
+            Frame   <= '1';
 
             IF inProgress = '0' THEN
               counter := counter +1;
+            END IF;
+
+            BackendEnable <= '0';
+
+          WHEN "100" =>
+
+            IF counter = 10 THEN
+              counter := 0;
+              state   := "000";
+              Frame   <= '0';
+            ELSE
+              counter := counter + 1;
+              Frame   <= '1';
             END IF;
 
             BackendEnable <= '0';
