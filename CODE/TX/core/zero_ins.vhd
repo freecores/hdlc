@@ -6,7 +6,7 @@
 -- Author      : Jamil Khatib  (khatib@ieee.org)
 -- Organization: OpenIPCore Project
 -- Created     : 2001/01/12
--- Last update: 2001/01/26
+-- Last update: 2001/05/27
 -- Platform    : 
 -- Simulators  : Modelsim 5.3XE/Windows98
 -- Synthesizers: 
@@ -30,7 +30,16 @@
 -- Date            :   12 Jan 2001
 -- Modifier        :   Jamil Khatib (khatib@ieee.org)
 -- Desccription    :   Created
---
+-------------------------------------------------------------------------------
+-- Revisions  :
+-- Revision Number :   2
+-- Version         :   0.2
+-- Date            :   27 May 2001
+-- Modifier        :   Jamil Khatib (khatib@ieee.org)
+-- Desccription    :   Tx zero insertion bug fixed
+--                     Zero is inserted after 5 sequence of 1's insted of 6 1's
+-------------------------------------------------------------------------------
+-- $Log: not supported by cvs2svn $
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -87,7 +96,7 @@ begin  -- zero_ins_beh
     elsif TxClk'event and TxClk = '1' then  -- rising clock edge
       if enable = '1' then
 
-        OnesDetected := tmp_reg(0) and tmp_reg(1) and tmp_reg(2) and tmp_reg(3) and tmp_reg(4) and tmp_reg(5);
+        OnesDetected := tmp_reg(0) and tmp_reg(1) and tmp_reg(2) and tmp_reg(3) and tmp_reg(4);
 
         delay_TX <= tmp_reg(0);
         TXD      <= delay_TX;
