@@ -109,6 +109,7 @@ The aim of this project is to develop the basic HDLC functionalities to be used 
 \item 10. FIFO buffers and synchronization (External)
 \item 11. Byte aligned data (if data is not aligned to 8-bits extra random bits are inserted)
 \item 12. Q.921 compliant
+\item 13. The core should not have internal configuration registers.
 \end{itemize}
 
 \subsection{External Interfaces}
@@ -121,19 +122,26 @@ The aim of this project is to develop the basic HDLC functionalities to be used 
 Signal name& Direction& Description\\
 \hline
 \hline
+Control interface & & \\
+\hline
+\hline
+Rst & Input & System asynchronous reset(active low)\\
+\hline
+\hline
 Serial Interface & & \\
 \hline
 \hline
 RxClk & Input & Receive Clock\\
 Rx & Input& Receive Data\\
+RxEn & Input & RX enable (active high)\\
 \hline
 \hline
 Back-end Interface & &\\
 \hline
 \hline
 RxD[7:0]& Output& Receive data bus\\
-Valid Frame& Output& Valid Frame indication during all frame bytes transfer\\
-Frame Error& Output& Error in the received data (lost bits)\\
+ValidFrame& Output& Valid Frame indication during all frame bytes transfer\\
+FrameErr& Output& Error in the received data (lost bits)\\
 Aborted& Output& Aborted Frame\\
 Read& input& Read byte\\
 Ready& Output& Valid data exists\\
@@ -141,6 +149,8 @@ Ready& Output& Valid data exists\\
 \end{tabular}
 
 \subsubsection{Back-end interface mapping to Wishbone SoC bus}
+The HDLC receive backend interface can be used as a slave core or master according to the below mapping. The core supports SINGLE READ Cycle only using 8-bit data bus without address lines. The choice between master and slave is left for the system integrator and must do the configuration and glue logic as defined in the tables.  
+
 
 \begin{tabular}{|l|l|}
 \hline
@@ -149,30 +159,36 @@ Signal Name& Wishbone signal\\
 \hline
 Master Configuration connected to FIFO&\\
 \hline
-Data[7:0]& DAT\_O[7:0]\\
+RxClk & CLK\_I\\
+Rst & not RST\_I\\
+RxD[7:0]& DAT\_O(7:0)\\
 ValidFrame& STB\_O\\
+ValidFrame& CYC\_O\\
 ReadByte& ACK\_I and not RTY\_I\\
-ready& WE\_O\\
-FrameERR& TAG\_O[0]\\
-Aborted& TAG\_O[1]\\
+Ready& WE\_O\\
+FrameERR& TAG0\_O\\
+Aborted& TAG1\_O\\
 \hline
 Slave FIFO(two-clock domain FIFO)&\\
 \hline
-Data[7:0]& DAT\_I[7:0]\\
+Data[7:0]& DAT\_I(7:0)\\
 Chip Select& STB\_I\\
-STB\_I& ACK\_O\\
+Chip Select& CYC\_I\\
+STB\_I& ACK\_O and not FullFlag\\
 FullFlag& RTY\_O\\
 Write& WE\_I\\
 \hline
 Slave Configuration &\\
 \hline
-Data[7:0]& DAT\_O[7:0]\\
-ValidFrame& TAG\_O[0]\\
-ReadByte& WE\_I\\
-Ready& RTY\_O\\
-Always active& ACK\_O\\
-FrameERR& TAG\_O[1]\\
-Aborted& TAG\_O[0]\\
+RxClk & CLK\_I\\
+Rst & not RST\_I\\
+RxD[7:0]& DAT\_O(7:0)\\
+ValidFrame& TAG0\_O\\
+ReadByte& not WE\_I\\
+Ready& not RTY\_O\\
+STB\_I and not WR\_I& ACK\_O\\
+FrameERR& TAG1\_O\\
+Aborted& TAG2\_O\\
 \hline
 \end{tabular}
 
