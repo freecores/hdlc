@@ -6,7 +6,7 @@
 -- Author      : Jamil Khatib  (khatib@ieee.org)
 -- Organization: OpenIPCore Project
 -- Created     :2001/01/15
--- Last update: 2001/01/26
+-- Last update: 2001/10/20
 -- Platform    : 
 -- Simulators  : Modelsim 5.3XE/Windows98
 -- Synthesizers: 
@@ -34,182 +34,157 @@
 -- Bugs            :   
 -------------------------------------------------------------------------------
 
-library ieee;
-use ieee.std_logic_1164.all;
-entity TxCont_ent is
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+ENTITY TxCont_ent IS
 
-  port (
-    TXclk         : in  std_logic;      -- TX clock
-    rst_n         : in  std_logic;      -- System Reset
-    TXEN          : in  std_logic;      -- TX enable
-    enable        : out std_logic;      -- Enable control
-    BackendEnable : out std_logic;      -- Backend Enable
-    abortedTrans  : in  std_logic;      -- No Valid data from the backend
-    inProgress    : in  std_logic;      -- Data in progress
-    ValidFrame    : in  std_logic;      -- Valid Frame
-    Frame         : out std_logic;      -- Frame strobe
-    AbortFrame    : in  std_logic;      -- AbortFrame
-    AbortTrans    : out std_logic);     -- Abort data transmission
+  PORT (
+    TXclk         : IN  STD_LOGIC;      -- TX clock
+    rst_n         : IN  STD_LOGIC;      -- System Reset
+    TXEN          : IN  STD_LOGIC;      -- TX enable
+    enable        : OUT STD_LOGIC;      -- Enable control
+    BackendEnable : OUT STD_LOGIC;      -- Backend Enable
+    abortedTrans  : IN  STD_LOGIC;      -- No Valid data from the backend
+    inProgress    : IN  STD_LOGIC;      -- Data in progress
+    ValidFrame    : IN  STD_LOGIC;      -- Valid Frame
+    Frame         : OUT STD_LOGIC;      -- Frame strobe
+    AbortFrame    : IN  STD_LOGIC;      -- AbortFrame
+    AbortTrans    : OUT STD_LOGIC);     -- Abort data transmission
 
-end TxCont_ent;
+END TxCont_ent;
 -------------------------------------------------------------------------------
-architecture TxCont_beh of TxCont_ent is
+ARCHITECTURE TxCont_beh OF TxCont_ent IS
 
-begin  -- TxCont_beh
+BEGIN  -- TxCont_beh
 
 -- purpose: Abort Machine
 -- type   : sequential
 -- inputs : Txclk, rst_n
 -- outputs: 
-  abort_proc : process (Txclk, rst_n)
+  abort_proc : PROCESS (Txclk, rst_n)
 
-    variable counter : integer range 0 to 14;  -- Counter
+    VARIABLE counter : INTEGER RANGE 0 TO 14;  -- Counter
 
-    variable state : std_logic;             -- Internal State
+    VARIABLE state : STD_LOGIC;             -- Internal State
     -- state ==> '0' No abort signal
     -- state ==> '1' Abort signal
-  begin  -- process abort_proc
-    if rst_n = '0' then                     -- asynchronous reset (active low)
+  BEGIN  -- process abort_proc
+    IF rst_n = '0' THEN                     -- asynchronous reset (active low)
       AbortTrans <= '0';
       Counter    := 0;
       enable     <= '1';
       state      := '0';
-    elsif Txclk'event and Txclk = '1' then  -- rising clock edge
-      if TXEN = '1' then
+    ELSIF Txclk'event AND Txclk = '1' THEN  -- rising clock edge
+      IF TXEN = '1' THEN
 
-        case state is
+        CASE state IS
 
-          when '0' =>
-            if abortedTrans = '1' or AbortFrame = '1' then
+          WHEN '0' =>
+            IF abortedTrans = '1' OR AbortFrame = '1' THEN
               state    := '1';
               Counter  := 0;
-            end if;
+            END IF;
             AbortTrans <= '0';
 
-          when '1' =>
-            if counter = 8 then
+          WHEN '1' =>
+            IF counter = 8 THEN
               counter := 0;
-              if abortedTrans = '0' and AbortFrame = '0' then
+              IF abortedTrans = '0' AND AbortFrame = '0' THEN
 
                 state      := '0';
                 AbortTrans <= '0';
-              else
+              ELSE
                 AbortTrans <= '1';
-              end if;
+              END IF;
 
-            else
+            ELSE
               counter := counter +1;
-            end if;  -- counter
+            END IF;  -- counter
 
-          when others => null;
+          WHEN OTHERS => NULL;
 
-        end case;
-      end if;  -- TXEN
+        END CASE;
+      END IF;  -- TXEN
       enable <= TXEN;
 
-    end if;  -- TXclk
-  end process abort_proc;
+    END IF;  -- TXclk
+  END PROCESS abort_proc;
 
   -- purpose: Flag Controller 
   -- type   : sequential
   -- inputs : Txclk, rst_n
   -- outputs: 
-  Flag_proc : process (Txclk, rst_n)
+  Flag_proc : PROCESS (Txclk, rst_n)
 
-    variable state   : std_logic_vector(2 downto 0);  -- Internal State machine
-    variable counter : integer range 0 to 16;         -- Internal counter
+    VARIABLE state   : STD_LOGIC_VECTOR(2 DOWNTO 0);  -- Internal State machine
+    VARIABLE counter : INTEGER RANGE 0 TO 16;         -- Internal counter
 
-  begin  -- process Flag_proc
-    if rst_n = '0' then                 -- asynchronous reset (active low)
-      Frame <= '0';
-      state         := (others => '0');
+  BEGIN  -- process Flag_proc
+    IF rst_n = '0' THEN                     -- asynchronous reset (active low)
+      Frame         <= '0';
+      state         := (OTHERS => '0');
       counter       := 0;
-      BackendEnable <= '1';
-    elsif Txclk'event and Txclk = '1' then  -- rising clock edge
-      if TXEN = '1' then
+      BackendEnable <= '0';
+    ELSIF Txclk'event AND Txclk = '1' THEN  -- rising clock edge
+      IF TXEN = '1' THEN
 
-        case state is
-          when "000" =>                 -- Check Valid Frame
-            Frame         <= '0';
-            if ValidFrame = '1' then
-              state       := "001";
-              counter     := 0;
-            end if;
+        CASE state IS
+          WHEN "000" =>                 -- Check Valid Frame
+            Frame           <= '0';
+            IF ValidFrame = '1' THEN
+              state         := "001";
+              BackendEnable <= '1';
+            ELSE
+              BackendEnable <= '0';
+            END IF;
+            counter         := 0;
+
+          WHEN "001" =>
+
+            IF counter > 1 AND inProgress = '0' THEN
+              state := "010";
+              Frame <= '1';
+            ELSE
+              Frame <= '0';
+            END IF;
+
+            IF inProgress = '0' THEN
+              counter := counter +1;
+            END IF;
+
             BackendEnable <= '1';
 
-          when "001" =>                 -- Wait 16 clks before set internal frame
-            counter := counter + 1;
-
-            if counter = 16 then
-              counter := 0;
-
-              if inProgress = '0' then
-                state     := "010";
-                Frame     <= '1';
-              else
-                state     := "101";
-                Frame     <= '0';
-              end if;
-            else
-              Frame       <= '0';
-            end if;
-            BackendEnable <= '1';
-
-          when "101" =>                 -- Wait for inProgress
-
-            if inProgress = '0' then
-              state       := "010";
-              Frame       <= '1';
-            else
-              Frame       <= '0';
-            end if;
-            BackendEnable <= '1';
-
-          when "010" =>                 -- Check ValidFrame
+          WHEN "010" =>                 -- Check ValidFrame
 
             Frame <= '1';
 
-            if ValidFrame = '0' then
+            IF ValidFrame = '0' THEN
               state         := "011";
-              counter       := 0;
               BackendEnable <= '0';
-            else
+            ELSE
               BackendEnable <= '1';
-            end if;
+            END IF;
 
-          when "011" =>                 -- wait 16 clk before trying to unset
-                                        -- internal frame
-            counter   := counter + 1;
-            if counter = 16 then
-              counter := 0;
-              if inProgress = '0' then
-                state := "000";
-                Frame <= '0';
-              else
-                state := "100";
-                Frame <= '1';
-              end if;
-            else
-              Frame <= '1';
-            end if;
+            counter := 0;
 
-            BackendEnable <= '0';
-
-          when "100" =>
-
-            if inProgress = '0' then
+          WHEN "011" =>
+            IF counter > 2 AND inProgress = '0' THEN
               state := "000";
               Frame <= '0';
-            else
+            ELSE
               Frame <= '1';
-            end if;
+            END IF;
+
+            IF inProgress = '0' THEN
+              counter := counter +1;
+            END IF;
 
             BackendEnable <= '0';
 
-          when others => null;
-        end case;
-      end if;  -- TXEN
-    end if;
-  end process Flag_proc;
+          WHEN OTHERS => NULL;
+        END CASE;
+      END IF;  -- TXEN
+    END IF;
+  END PROCESS Flag_proc;
 -------------------------------------------------------------------------------
-end TxCont_beh;
+END TxCont_beh;
