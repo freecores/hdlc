@@ -86,7 +86,7 @@ begin  -- Txchannel_str
     port map (
       TxClk         => TxClk,
       rst_n         => rst_n,
-      enable        => enable_i,
+      enable        => TXEN,
       BackendEnable => BackendEnable_i,
       abortedTrans  => abortedTrans_i,
       inProgress    => inProgress_i,
